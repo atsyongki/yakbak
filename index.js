@@ -39,7 +39,7 @@ module.exports = function (host, opts) {
         if (opts.noRecord) {
           throw new RecordingDisabledError('Recording Disabled');
         } else {
-          return proxy(req, body, host).then(function (pres) {
+          return proxy(req, body, host, opts.preFlight).then(function (pres) {
             return record(pres.req, pres, file);
           });
         }
