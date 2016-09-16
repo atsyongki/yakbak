@@ -29,6 +29,8 @@ module.exports = function (host, opts) {
 
     debug('req', req.url);
 
+    tapename = opts.tapename || tapename;
+
     return buffer(req).then(function (body) {
       var file = path.join(opts.dirname, tapename(req, body));
 
