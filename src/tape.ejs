@@ -1,4 +1,5 @@
 var path = require("path");
+var debug = require('debug')('yakbak:tape');
 
 /**
  * <%- req.method %> <%- decodeURIComponent(req.path) %>
@@ -17,7 +18,10 @@ module.exports = function (req, res) {
 
   res.setHeader("x-yakbak-tape", path.basename(__filename, ".js"));
 
+  debug("statusCode", <%- JSON.stringify(res.statusCode) %>);
+  
 <% body.forEach(function (data) { -%>
+
   res.write(new Buffer(<%- JSON.stringify(data.toString('base64')) %>, "base64"));
 <% }); -%>
   res.end();
