@@ -10,7 +10,6 @@ var buffer = require('./lib/buffer');
 var proxy = require('./lib/proxy');
 var record = require('./lib/record');
 var curl = require('./lib/curl');
-var debug = require('debug')('yakbak:server');
 
 /**
  * Returns a new yakbak proxy middleware.
@@ -22,11 +21,13 @@ var debug = require('debug')('yakbak:server');
  */
 
 module.exports = function (host, opts) {
+  // debug('opts', opts);
   assert(opts.dirname, 'You must provide opts.dirname');
 
+  var debug = require('debug')('yakbak:server:' + host);
+  
   return function (req, res) {
-    mkdirp.sync(opts.dirname);
-
+    
     debug('req', req.url);
 
     tapename = opts.tapename || tapename;
@@ -41,6 +42,7 @@ module.exports = function (host, opts) {
         if (opts.noRecord) {
           throw new RecordingDisabledError('Recording Disabled');
         } else {
+          mkdirp.sync(opts.dirname);
           return proxy(req, body, host, opts.preFlight).then(function (pres) {
             return record(pres.req, pres, file);
           });
