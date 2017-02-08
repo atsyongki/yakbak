@@ -33,7 +33,7 @@ module.exports = function (host, opts) {
     tapename = opts.tapename || tapename;
 
     return buffer(req).then(function (body) {
-      var file = path.join(opts.dirname, tapename(req, body));
+      var file = path.join(opts.dirname, tapename(req, body, opts.ignore));
 
       return Promise.try(function () {
         return require.resolve(file);
@@ -44,14 +44,26 @@ module.exports = function (host, opts) {
         } else {
           mkdirp.sync(opts.dirname);
           return proxy(req, body, host, opts.preFlight).then(function (pres) {
-            return record(pres.req, pres, file);
+            if(pres == undefined){
+              console.log('url:' + req.url +' - could not found existing file and unable to connect to server');
+              res.statusCode = 404;
+              res.end();
+              return null;
+            }
+            else
+              return record(pres.req, pres, file);
           });
         }
 
       });
     }).then(function (file) {
+      if(file == null)
+        return null;
+      console.log('url:' + req.url + ' tapes file:' + file);
       return require(file);
     }).then(function (tape) {
+      if(tape == null)
+        return null;
       return tape(req, res);
     }).catch(RecordingDisabledError, function (err) {
       /* eslint-disable no-console */
@@ -73,8 +85,8 @@ module.exports = function (host, opts) {
  * @returns {String}
  */
 
-function tapename(req, body) {
-  return hash.sync(req, Buffer.concat(body)) + '.js';
+function tapename(req, body, ignore) {
+  return hash.sync(req, Buffer.concat(body), null, null, ignore) + '.js';
 }
 
 /**
